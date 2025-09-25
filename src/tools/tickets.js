@@ -159,5 +159,34 @@ import { z } from 'zod';
             };
           }
         }
+      },
+      {
+        name: "get_ticket_comments",
+        description: "Get all comments for a specific ticket",
+        schema: {
+          ticket_id: z.number().describe("Ticket ID"),
+          include_inline_images: z.boolean().optional().describe("Include inline images as attachments"),
+          include: z.string().optional().describe("Additional data to include (e.g., 'users')")
+        },
+        handler: async ({ ticket_id, include_inline_images, include }) => {
+          try {
+            const params = {};
+            if (include_inline_images !== undefined) params.include_inline_images = include_inline_images;
+            if (include !== undefined) params.include = include;
+
+            const result = await zendeskClient.getTicketComments(ticket_id, params);
+            return {
+              content: [{
+                type: "text",
+                text: JSON.stringify(result, null, 2)
+              }]
+            };
+          } catch (error) {
+            return {
+              content: [{ type: "text", text: `Error getting ticket comments: ${error.message}` }],
+              isError: true
+            };
+          }
+        }
       }
     ];
